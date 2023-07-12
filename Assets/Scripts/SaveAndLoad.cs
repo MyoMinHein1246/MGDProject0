@@ -23,7 +23,7 @@ public class SaveAndLoad : MonoBehaviour
             return;
         }
 
-        StartCoroutine(LoadBlocks(blocks));
+        StartCoroutine(LoadBlocksCor(blocks));
     }
 
     private List<BlockData> GetBlockData()
@@ -38,7 +38,7 @@ public class SaveAndLoad : MonoBehaviour
 
         foreach (var block in builder.GetBlockBuiltBlocks())
         {
-            blockData.Add(block.BlockData);
+            blockData.Add(block.Value.BlockData);
         }
 
         return blockData;
@@ -50,11 +50,12 @@ public class SaveAndLoad : MonoBehaviour
 
         yield return null;
 		yield return SaveSystem.Save(GetBlockData());
+        yield return null;
 
 		uiManager.UpdateUI(UIState.Normal);
 	}
 
-    private IEnumerator LoadBlocks(List<BlockData> blocks)
+    private IEnumerator LoadBlocksCor(List<BlockData> blocks)
     {
         uiManager.UpdateUI(UIState.Loading);
         builder.DeleteAll();

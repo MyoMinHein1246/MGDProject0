@@ -8,11 +8,11 @@ public class Builder : MonoBehaviour
     [SerializeField] private MinMax width;
     [SerializeField] private MinMax height;
 
-    private List<Block> builtBlocks = new List<Block>();
+    private Dictionary<Vector2, Block> builtBlocks = new Dictionary<Vector2, Block>();
     
     public void Build(BlockData blockData)
     {
-        if (ExistsAt(blockData.coord))
+        if (builtBlocks.ContainsKey(blockData.coord))
         {
             print($"Already built at {blockData.coord}.");
             return;
@@ -27,50 +27,28 @@ public class Builder : MonoBehaviour
         var block = Instantiate(blockPrefab, blockData.coord, Quaternion.identity);
         block.Set(blockData);
 
-        builtBlocks.Add(block);
+        builtBlocks.Add(blockData.coord, block);
 
         print($"Built at {block.transform.position} using {blockData.color}.");
     }
 
     public void DeleteAt(Vector2 coord)
     {
-		for (int i = 0; i < builtBlocks.Count; i++)
-		{
-            if (builtBlocks[i].BlockData.coord == coord)
-            {
-                Delete(builtBlocks[i]);
-                break;
-            }
+        if (builtBlocks.TryGetValue(coord, out var block))
+        {
+            builtBlocks.Remove(coord);
+            Destroy(block.gameObject);
         }
     }
 
     public void DeleteAll()
     {
-        for (int i = 0; i <  builtBlocks.Count; i++)
+        foreach (var block in builtBlocks.Values)
         {
-            Delete(builtBlocks[i]);
+            Destroy(block.gameObject);
         }
 
         builtBlocks.Clear();
-    }
-
-	public void Delete(Block block)
-	{
-        if (block)
-		    Destroy(block.gameObject);
-	}
-
-    public bool ExistsAt(Vector2 coord)
-    {
-        for (int i = 0; i < builtBlocks.Count; i++)
-        {
-            if (builtBlocks[i].BlockData.coord == coord)
-            {
-                return true;
-            }
-        }
-
-        return false;
     }
 
 	public bool IsInside(Vector3 pos)
@@ -79,5 +57,5 @@ public class Builder : MonoBehaviour
             && pos.y < height.max && pos.y > height.min;
     }
 
-    public List<Block> GetBlockBuiltBlocks() => builtBlocks;
+    public Dictionary<Vector2, Block> GetBlockBuiltBlocks() => builtBlocks;
 }
